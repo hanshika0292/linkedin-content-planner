@@ -1,6 +1,6 @@
 # Third-party notices
 
-LinkedIn Content Planner does not vendor, copy or fork any third-party source code, fonts,
+Content Planner for LinkedIn does not vendor, copy or fork any third-party source code, fonts,
 images or data. Everything in this repository is original work under the [MIT License](LICENSE).
 
 ## Dependencies
@@ -12,10 +12,10 @@ included in this repository. The main runtime dependencies are:
 | --- | --- |
 | [React](https://github.com/facebook/react) and React DOM | MIT |
 | [@supabase/supabase-js](https://github.com/supabase/supabase-js) | MIT |
-| [@google/generative-ai](https://github.com/google-gemini/generative-ai-js) | Apache-2.0 |
+| [@google/genai](https://github.com/googleapis/js-genai) | Apache-2.0 |
 | [lucide-react](https://github.com/lucide-icons/lucide) (icons) | ISC |
 
-Build tools (Vite, TypeScript, Tailwind CSS, PostCSS, ESLint) are dev dependencies under their
+Build and test tools (Vite, TypeScript, Tailwind CSS, PostCSS, ESLint, Vitest) are dev dependencies under their
 own licenses. A production build (`npm run build`) bundles the runtime dependencies into
 `dist/`. If you redistribute a build, include their license notices; `npm ls` and each
 package's `LICENSE` file in `node_modules/` list them.
