@@ -1,7 +1,7 @@
 "use client"
 
 import type { Post } from "../types"
-import { isTodayIST, isPastDateIST } from "../utils/date-utils"
+import { isPastDateKey } from "../utils/date-utils"
 
 interface CalendarGridProps {
   daysInMonth: number
@@ -23,6 +23,7 @@ const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 export function CalendarGrid({
   daysInMonth,
   firstDay,
+  todayKey,
   selectedDate,
   getPostsForDate,
   categories,
@@ -45,9 +46,9 @@ export function CalendarGrid({
       const date = createDateFromDay(day)
       const dateKey = formatDateKey(date)
       const posts = getPostsForDate(dateKey)
-      const isToday = isTodayIST(date)
+      const isToday = dateKey === todayKey
       const isSelected = dateKey === selectedDate
-      const isPastDate = isPastDateIST(date)
+      const isPastDate = isPastDateKey(dateKey, todayKey)
 
       days.push(
         <div

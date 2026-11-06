@@ -1,6 +1,7 @@
 import React, { useReducer } from 'react';
 import { usePosts } from '../hooks/usePosts';
 import { useCategories } from '../hooks/useCategories';
+import { getTodayKey } from '../utils/date-utils';
 import { AppContext, type AppAction, type AppState } from './use-app';
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -16,14 +17,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
   }
 }
 
-const initialState: AppState = {
-  currentView: 'dashboard',
-  selectedDate: new Date().toISOString().split('T')[0],
-  postFilter: 'draft',
-};
+function createInitialState(): AppState {
+  return {
+    currentView: 'dashboard',
+    // Today in the browser's time zone (not UTC), so the calendar opens on the right day.
+    selectedDate: getTodayKey(),
+    postFilter: 'draft',
+  };
+}
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
+  const [state, dispatch] = useReducer(appReducer, undefined, createInitialState);
   const posts = usePosts();
   const categories = useCategories();
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useCallback } from "react"
-import { formatDateIST, getTodayIST, createISTDateFromDay } from "../utils/date-utils"
+import { toDateKey, getTodayKey, createDateFromDay as dateFromDay } from "../utils/date-utils"
 
 export function useCalendar(currentDate: Date) {
   const calendarData = useMemo(() => {
@@ -10,7 +10,7 @@ export function useCalendar(currentDate: Date) {
 
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const firstDay = new Date(year, month, 1).getDay()
-    const todayKey = getTodayIST()
+    const todayKey = getTodayKey()
 
     return {
       daysInMonth,
@@ -22,12 +22,12 @@ export function useCalendar(currentDate: Date) {
   }, [currentDate])
 
   const formatDateKey = useCallback((date: Date) => {
-    return formatDateIST(date)
+    return toDateKey(date)
   }, [])
 
   const createDateFromDay = useCallback(
     (day: number) => {
-      return createISTDateFromDay(calendarData.year, calendarData.month, day)
+      return dateFromDay(calendarData.year, calendarData.month, day)
     },
     [calendarData.year, calendarData.month],
   )

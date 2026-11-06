@@ -2,6 +2,7 @@
 
 import { Calendar, Clock } from "lucide-react"
 import type { Post } from "../types"
+import { formatScheduledDate, getTimeUntil } from "../utils/date-utils"
 
 interface UpcomingPostsCardProps {
   posts: Post[]
@@ -10,24 +11,6 @@ interface UpcomingPostsCardProps {
 }
 
 export function UpcomingPostsCard({ posts, categories, onEditPost }: UpcomingPostsCardProps) {
-  const getTimeUntilPost = (scheduledDate: string) => {
-    const now = new Date()
-    const scheduled = new Date(scheduledDate)
-    const diffMs = scheduled.getTime() - now.getTime()
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffDays = Math.floor(diffHours / 24)
-
-    if (diffDays > 0) {
-      return `in ${diffDays} day${diffDays > 1 ? "s" : ""}`
-    } else if (diffHours > 0) {
-      return `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`
-    } else if (diffMs > 0) {
-      return "soon"
-    } else {
-      return "overdue"
-    }
-  }
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
@@ -44,7 +27,7 @@ export function UpcomingPostsCard({ posts, categories, onEditPost }: UpcomingPos
           <div className="space-y-4">
             {posts.map((post) => {
               const category = categories.find((c) => c.id === post.category)
-              const timeUntil = getTimeUntilPost(post.scheduledDate!)
+              const timeUntil = getTimeUntil(post.scheduledDate!)
               const isOverdue = timeUntil === "overdue"
 
               return (
@@ -69,12 +52,7 @@ export function UpcomingPostsCard({ posts, categories, onEditPost }: UpcomingPos
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">
-                      {new Date(post.scheduledDate!).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatScheduledDate(post.scheduledDate!)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">{post.content}</p>
