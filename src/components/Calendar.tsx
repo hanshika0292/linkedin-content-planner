@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useApp } from "../context/AppContext"
+import { useApp } from "../context/use-app"
 import { PostEditor } from "./PostEditor"
 import type { Post } from "../types"
 import { useCalendar } from "../hooks/use-calendar"

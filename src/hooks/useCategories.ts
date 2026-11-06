@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Category } from '../types';
 import { useAuth } from './useAuth';
@@ -15,7 +15,28 @@ export function useCategories() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchCategories = async () => {
+  const createDefaultCategories = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert(
+          defaultCategories.map(cat => ({
+            ...cat,
+            user_id: user.id,
+          }))
+        )
+        .select();
+
+      if (error) throw error;
+      setCategories(data);
+    } catch (error) {
+      console.error('Error creating default categories:', error);
+    }
+  }, [user]);
+
+  const fetchCategories = useCallback(async () => {
     if (!user) {
       setCategories([]);
       setLoading(false);
@@ -42,28 +63,7 @@ export function useCategories() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const createDefaultCategories = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .insert(
-          defaultCategories.map(cat => ({
-            ...cat,
-            user_id: user.id,
-          }))
-        )
-        .select();
-
-      if (error) throw error;
-      setCategories(data);
-    } catch (error) {
-      console.error('Error creating default categories:', error);
-    }
-  };
+  }, [user, createDefaultCategories]);
 
   const addCategory = async (categoryData: Omit<Category, 'id'>) => {
     if (!user) return null;
@@ -97,7 +97,7 @@ export function useCategories() {
 
   useEffect(() => {
     fetchCategories();
-  }, [user]);
+  }, [fetchCategories]);
 
   return {
     categories,

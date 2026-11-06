@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import type { Post } from "../types"
-import { normalizeDate } from "../utils/date-utils"
+import { scheduledDateKey } from "../utils/date-utils"
 
 export function useCalendarPosts(posts: Post[]) {
   const getPostsForDate = useMemo(() => {
@@ -11,8 +11,8 @@ export function useCalendarPosts(posts: Post[]) {
     posts
       .filter((post) => post.scheduledDate && post.status === "scheduled")
       .forEach((post) => {
-        // Normalize the scheduled date to ensure consistent comparison
-        const dateKey = normalizeDate(post.scheduledDate!)
+        // The post's calendar day, with no time zone conversion for date-only values
+        const dateKey = scheduledDateKey(post.scheduledDate!)
         if (!postsByDate.has(dateKey)) {
           postsByDate.set(dateKey, [])
         }

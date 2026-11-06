@@ -1,4 +1,4 @@
--- Tables for LinkedIn Content Planner
+-- Tables for Content Planner for LinkedIn
 
 create table if not exists categories (
   id uuid primary key default uuid_generate_v4(),

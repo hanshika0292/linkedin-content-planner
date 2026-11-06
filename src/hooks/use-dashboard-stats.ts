@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import type { Post } from "../types"
+import { parseScheduledDate } from "../utils/date-utils"
 
 export function useDashboardStats(posts: Post[]) {
   return useMemo(() => {
@@ -24,7 +25,7 @@ export function useDashboardStats(posts: Post[]) {
 
     const upcomingPosts = posts
       .filter((p) => p.status === "scheduled" && p.scheduledDate)
-      .sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime())
+      .sort((a, b) => parseScheduledDate(a.scheduledDate!).getTime() - parseScheduledDate(b.scheduledDate!).getTime())
       .slice(0, 5)
 
     const categoryStats = posts.reduce(

@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { Save, X, Calendar, Tag, Eye, EyeOff, Sparkles, TrendingUp, Image as ImageIcon, Wand2 } from "lucide-react"
-import { useApp } from "../context/AppContext"
+import { useApp } from "../context/use-app"
 import type { Post } from "../types"
-import { TrendingTopic, GeneratedImage, RefinementType } from "../lib/gemini"
+import { TrendingTopic, GeneratedImage } from "../lib/gemini"
 import { useTrendingTopics } from "../hooks/useTrendingTopics"
 import { useTextFormatting } from "../hooks/use-text-formatting"
 import { FormattingToolbar } from "./formatting-toolbar"
@@ -13,7 +13,7 @@ import { LinkedInPostPreview } from "./linkedin-post-preview"
 import { TrendingTopics } from "./TrendingTopics"
 import { ContentRefinement } from "./ContentRefinement"
 import { ImageGenerator } from "./ImageGenerator"
-import { formatDateTimeIST, getMinScheduleTimeIST, getCurrentIST } from "../utils/date-utils"
+import { scheduledDateToInputValue, getMinScheduleTime } from "../utils/date-utils"
 
 interface PostEditorProps {
   post?: Post
@@ -33,7 +33,7 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
   const [content, setContent] = useState(post?.content || "")
   const [category, setCategory] = useState(post?.category || categories.categories[0]?.id || "")
   const [scheduledDate, setScheduledDate] = useState(
-    post?.scheduledDate ? formatDateTimeIST(new Date(post.scheduledDate)) : 
+    post?.scheduledDate ? scheduledDateToInputValue(post.scheduledDate) :
     selectedDateForScheduling ? `${selectedDateForScheduling}T09:00` : ""
   )
   const [status, setStatus] = useState<"draft" | "scheduled">(
@@ -55,8 +55,8 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
       category,
       scheduledDate: status === "scheduled" && scheduledDate ? scheduledDate : undefined,
       status,
-      createdAt: post?.createdAt || getCurrentIST().toISOString(),
-      updatedAt: getCurrentIST().toISOString(),
+      createdAt: post?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       media: selectedImage ? {
         type: 'image' as const,
         url: selectedImage.url,
@@ -110,7 +110,7 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
     }
   }, [generatePostContent])
 
-  const handleRefinedContent = useCallback((refinedContent: string, _refinementType: RefinementType) => {
+  const handleRefinedContent = useCallback((refinedContent: string) => {
     setContent(refinedContent)
     setShowContentRefinement(false)
   }, [])
@@ -399,11 +399,11 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
                   type="datetime-local"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  min={getMinScheduleTimeIST()}
+                  min={getMinScheduleTime()}
                   className="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-400 shadow-sm transition-all"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Times are in Indian Standard Time (IST)
+                  Uses your device's time zone
                 </p>
               </div>
             )}
@@ -415,7 +415,7 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
               <div className="sticky top-0 bg-gradient-to-b from-gray-50 to-gray-100 pb-4 mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Eye className="w-5 h-5 text-blue-600" />
-                  LinkedIn Preview
+                  LinkedIn-style Preview
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">See how your post will look on LinkedIn</p>
               </div>

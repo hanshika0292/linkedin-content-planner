@@ -1,6 +1,7 @@
 "use client"
 
 import type { Post } from "../types"
+import { dateFromKey, formatScheduledTime } from "../utils/date-utils"
 
 interface SelectedDatePostsProps {
   selectedDate: string
@@ -17,7 +18,7 @@ export function SelectedDatePosts({
   onEditPost,
   onCreatePost,
 }: SelectedDatePostsProps) {
-  const selectedDateObj = new Date(selectedDate)
+  const selectedDateObj = dateFromKey(selectedDate)
   const formattedDate = selectedDateObj.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -48,11 +49,7 @@ export function SelectedDatePosts({
                         {category?.name || "Uncategorized"}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {post.scheduledDate &&
-                          new Date(post.scheduledDate).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        {post.scheduledDate && formatScheduledTime(post.scheduledDate)}
                       </span>
                     </div>
                     <button

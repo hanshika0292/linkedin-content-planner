@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Sparkles, RefreshCw, Eye, EyeOff, ArrowRight, X } from 'lucide-react';
 import { REFINEMENT_OPTIONS, RefinementType } from '../lib/gemini';
 import { useTrendingTopics } from '../hooks/useTrendingTopics';

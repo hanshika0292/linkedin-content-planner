@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Linkedin, Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react"
+import { NotebookPen, Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "../hooks/useAuth"
 
 export function AuthForm() {
@@ -37,9 +37,9 @@ export function AuthForm() {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 transform transition-all duration-300 hover:scale-[1.01]">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Linkedin className="w-14 h-14 text-blue-600" />
+            <NotebookPen className="w-14 h-14 text-blue-600" aria-hidden="true" />
           </div>
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">LinkedIn Social Manager</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Content Planner for LinkedIn</h1>
           <p className="text-gray-600 text-lg">{isSignUp ? "Create your account" : "Sign in to your account"}</p>
         </div>
 

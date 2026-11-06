@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { TrendingUp, RefreshCw, Sparkles, Hash, ArrowRight, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { useTrendingTopics } from '../hooks/useTrendingTopics';
 import { TrendingTopic } from '../lib/gemini';

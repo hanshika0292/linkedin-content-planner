@@ -1,7 +1,7 @@
-import React from 'react';
 import { useAuth } from './hooks/useAuth';
 import { AuthForm } from './components/AuthForm';
-import { AppProvider, useApp } from './context/AppContext';
+import { AppProvider } from './context/AppContext';
+import { useApp } from './context/use-app';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { Calendar } from './components/Calendar';

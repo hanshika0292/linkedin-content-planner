@@ -1,31 +1,8 @@
-import React, { createContext, useContext, useReducer } from 'react';
-import { ViewMode, PostFilter } from '../types';
+import React, { useReducer } from 'react';
 import { usePosts } from '../hooks/usePosts';
 import { useCategories } from '../hooks/useCategories';
-
-interface AppState {
-  currentView: ViewMode;
-  selectedDate: string;
-  postFilter: PostFilter;
-}
-
-type AppAction =
-  | { type: 'SET_VIEW'; payload: ViewMode }
-  | { type: 'SET_SELECTED_DATE'; payload: string }
-  | { type: 'SET_POST_FILTER'; payload: PostFilter };
-
-const initialState: AppState = {
-  currentView: 'dashboard',
-  selectedDate: new Date().toISOString().split('T')[0],
-  postFilter: 'draft',
-};
-
-const AppContext = createContext<{
-  state: AppState;
-  dispatch: React.Dispatch<AppAction>;
-  posts: ReturnType<typeof usePosts>;
-  categories: ReturnType<typeof useCategories>;
-} | null>(null);
+import { getTodayKey } from '../utils/date-utils';
+import { AppContext, type AppAction, type AppState } from './use-app';
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -40,8 +17,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
   }
 }
 
+function createInitialState(): AppState {
+  return {
+    currentView: 'dashboard',
+    // Today in the browser's time zone (not UTC), so the calendar opens on the right day.
+    selectedDate: getTodayKey(),
+    postFilter: 'draft',
+  };
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
+  const [state, dispatch] = useReducer(appReducer, undefined, createInitialState);
   const posts = usePosts();
   const categories = useCategories();
 
@@ -50,12 +36,4 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
 }
