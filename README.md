@@ -1,5 +1,6 @@
 # Content Planner for LinkedIn: open-source post planner and content calendar, with Gemini AI writing help
 
+[![CI](https://github.com/hanshika0292/linkedin-content-planner/actions/workflows/ci.yml/badge.svg)](https://github.com/hanshika0292/linkedin-content-planner/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![React 18 + TypeScript](https://img.shields.io/badge/React%2018-TypeScript-3178C6.svg)
 ![Vite 6](https://img.shields.io/badge/Vite-6-646CFF.svg)
