@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useAuth } from './useAuth';
@@ -8,7 +8,7 @@ export function usePosts() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     if (!user) {
       setPosts([]);
       setLoading(false);
@@ -45,7 +45,7 @@ export function usePosts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const addPost = async (postData: Omit<Post, 'id'>) => {
     if (!user) return null;
@@ -161,7 +161,7 @@ export function usePosts() {
 
   useEffect(() => {
     fetchPosts();
-  }, [user]);
+  }, [fetchPosts]);
 
   return {
     posts,

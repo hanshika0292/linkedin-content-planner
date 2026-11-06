@@ -2,7 +2,7 @@
 
 import { useCallback } from "react"
 import { FileText, Clock, CheckCircle2, TrendingUp } from "lucide-react"
-import { useApp } from "../context/AppContext"
+import { useApp } from "../context/use-app"
 import { useDashboardStats } from "../hooks/use-dashboard-stats"
 import { StatsCard } from "./stats-card"
 import { ActivityChart } from "./activity-chart"
@@ -11,6 +11,7 @@ import { QuickActions } from "./quick-actions"
 import { RecentPostsCard } from "./recent-posts-card"
 import { TrendingTopics } from "./TrendingTopics"
 import { TrendingTopic } from "../lib/gemini"
+import type { Post } from "../types"
 
 export function Dashboard() {
   const { posts, categories, dispatch } = useApp()
@@ -35,7 +36,7 @@ export function Dashboard() {
     console.log("Create new post")
   }, [])
 
-  const handleEditPost = useCallback((post: any) => {
+  const handleEditPost = useCallback((post: Post) => {
     // This would open the post editor with the selected post
     console.log("Edit post:", post.id)
   }, [])

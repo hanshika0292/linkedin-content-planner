@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { Save, X, Calendar, Tag, Eye, EyeOff, Sparkles, TrendingUp, Image as ImageIcon, Wand2 } from "lucide-react"
-import { useApp } from "../context/AppContext"
+import { useApp } from "../context/use-app"
 import type { Post } from "../types"
-import { TrendingTopic, GeneratedImage, RefinementType } from "../lib/gemini"
+import { TrendingTopic, GeneratedImage } from "../lib/gemini"
 import { useTrendingTopics } from "../hooks/useTrendingTopics"
 import { useTextFormatting } from "../hooks/use-text-formatting"
 import { FormattingToolbar } from "./formatting-toolbar"
@@ -110,7 +110,7 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
     }
   }, [generatePostContent])
 
-  const handleRefinedContent = useCallback((refinedContent: string, _refinementType: RefinementType) => {
+  const handleRefinedContent = useCallback((refinedContent: string) => {
     setContent(refinedContent)
     setShowContentRefinement(false)
   }, [])

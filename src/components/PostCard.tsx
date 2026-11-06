@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Calendar, Edit, Copy, Trash2, Tag, Clock, Send } from "lucide-react"
 import type { Post } from "../types"
-import { useApp } from "../context/AppContext"
+import { useApp } from "../context/use-app"
 import { formatRelativeDate, getContrastTextColor } from "../utils/date-utils"
 
 interface PostCardProps {

@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { Calendar, FileText, Home, Linkedin, LogOut, UserCircle, ChevronDown } from "lucide-react"
 import type { ViewMode } from "../types"
-import { useApp } from "../context/AppContext"
+import { useApp } from "../context/use-app"
 import { useAuth } from "../hooks/useAuth"
 
 export function Header() {

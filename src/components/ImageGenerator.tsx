@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Image, Sparkles, RefreshCw, Download, Eye, X, Palette } from 'lucide-react';
 import { GeneratedImage } from '../lib/gemini';
 import { useTrendingTopics } from '../hooks/useTrendingTopics';
