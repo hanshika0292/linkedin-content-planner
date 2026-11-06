@@ -1,20 +1,65 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { GoogleGenAI } from '@google/genai';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+/**
+ * Gemini model used when VITE_GEMINI_MODEL is not set.
+ * Current models: https://ai.google.dev/gemini-api/docs/models
+ * Retirement dates: https://ai.google.dev/gemini-api/docs/deprecations
+ */
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
 
-if (!apiKey) {
-  console.warn('Gemini API key not found. Trending topics feature will be disabled.');
+/** Returns the configured model name, or the default when it is unset or blank. */
+export function resolveGeminiModel(configured: string | undefined): string {
+  const model = configured?.trim();
+  return model ? model : DEFAULT_GEMINI_MODEL;
 }
 
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const NOT_CONFIGURED_MESSAGE = 'Gemini API not configured. Please add VITE_GEMINI_API_KEY to your environment.';
+
+export const TOPIC_CATEGORIES = ['Technology', 'Business', 'Leadership', 'Industry', 'Career', 'Innovation'] as const;
 
 export interface TrendingTopic {
   id: string;
   topic: string;
   description: string;
-  category: 'Technology' | 'Business' | 'Leadership' | 'Industry' | 'Career' | 'Innovation';
+  category: (typeof TOPIC_CATEGORIES)[number];
   hashtags: string[];
   contentSuggestion: string;
+}
+
+type RawTopic = Partial<Record<keyof TrendingTopic, unknown>>;
+
+const asText = (value: unknown, fallback: string): string =>
+  typeof value === 'string' && value.trim() ? value : fallback;
+
+/**
+ * Parses the model's reply to the trending-topics prompt: a JSON array,
+ * optionally wrapped in a ```json code fence. Missing fields get defaults.
+ */
+export function parseTrendingTopics(text: string, now: number = Date.now()): TrendingTopic[] {
+  const json = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
+  const parsed: unknown = JSON.parse(json);
+  if (!Array.isArray(parsed)) {
+    throw new Error('Expected a JSON array of topics');
+  }
+
+  return parsed.map((item: unknown, index: number): TrendingTopic => {
+    const topic: RawTopic = item && typeof item === 'object' ? (item as RawTopic) : {};
+    const category = TOPIC_CATEGORIES.find((c) => c === topic.category) ?? 'Business';
+    const hashtags = Array.isArray(topic.hashtags)
+      ? topic.hashtags.filter((tag): tag is string => typeof tag === 'string')
+      : ['professional', 'linkedin'];
+    return {
+      id: asText(topic.id, `topic-${now}-${index}`),
+      topic: asText(topic.topic, 'Trending Topic'),
+      description: asText(topic.description, 'A trending professional topic'),
+      category,
+      hashtags,
+      contentSuggestion: asText(topic.contentSuggestion, 'Share your thoughts on this trending topic'),
+    };
+  });
 }
 
 export interface GeneratedImage {
@@ -93,13 +138,65 @@ export const REFINEMENT_OPTIONS: RefinementOption[] = [
   }
 ];
 
+export interface GeminiServiceOptions {
+  apiKey?: string;
+  /** Model name; blank or missing falls back to DEFAULT_GEMINI_MODEL. */
+  model?: string;
+}
+
 export class GeminiService {
-  private model = genAI?.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  private readonly apiKey: string | undefined;
+  private client: Promise<GoogleGenAI> | null = null;
+  readonly model: string;
+
+  constructor({ apiKey, model }: GeminiServiceOptions = {}) {
+    this.apiKey = apiKey || undefined;
+    this.model = resolveGeminiModel(model);
+  }
+
+  /** Throws the "not configured" error (shown as-is in the UI) when there is no API key. */
+  private requireClient(): string {
+    if (!this.apiKey) {
+      throw new Error(NOT_CONFIGURED_MESSAGE);
+    }
+    return this.apiKey;
+  }
+
+  /**
+   * The SDK is loaded on first use, in its own chunk, so the main bundle stays small
+   * for anyone who never opens an AI feature.
+   */
+  private getClient(): Promise<GoogleGenAI> {
+    const apiKey = this.requireClient();
+    if (!this.client) {
+      this.client = import('@google/genai').then(
+        ({ GoogleGenAI }) => new GoogleGenAI({ apiKey }),
+        (error: unknown) => {
+          this.client = null; // allow a retry after a failed chunk load
+          throw error;
+        },
+      );
+    }
+    return this.client;
+  }
+
+  /** Sends one text prompt and returns the reply text (the SDK leaves out thinking parts). */
+  private async generateText(prompt: string): Promise<string> {
+    const client = await this.getClient();
+    const response = await client.models.generateContent({
+      model: this.model,
+      contents: prompt,
+    });
+    const text = response.text;
+    if (!text) {
+      const reason = response.candidates?.[0]?.finishReason ?? response.promptFeedback?.blockReason ?? 'unknown';
+      throw new Error(`Gemini returned no text (reason: ${reason})`);
+    }
+    return text;
+  }
 
   async getTrendingTopics(): Promise<TrendingTopic[]> {
-    if (!this.model) {
-      throw new Error('Gemini API not configured. Please add VITE_GEMINI_API_KEY to your environment.');
-    }
+    this.requireClient();
 
     const today = new Date().toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -140,23 +237,8 @@ export class GeminiService {
     Return only the JSON array, no additional text.`;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Clean up the response to ensure it's valid JSON
-      const cleanedText = text.trim().replace(/```json\n?/, '').replace(/```\n?/, '');
-      const topics = JSON.parse(cleanedText);
-
-      // Validate the structure and add unique IDs if missing
-      return topics.map((topic: any, index: number) => ({
-        id: topic.id || `topic-${Date.now()}-${index}`,
-        topic: topic.topic || 'Trending Topic',
-        description: topic.description || 'A trending professional topic',
-        category: topic.category || 'Business',
-        hashtags: Array.isArray(topic.hashtags) ? topic.hashtags : ['professional', 'linkedin'],
-        contentSuggestion: topic.contentSuggestion || 'Share your thoughts on this trending topic'
-      }));
+      const text = await this.generateText(prompt);
+      return parseTrendingTopics(text);
     } catch (error) {
       console.error('Error fetching trending topics:', error);
       throw new Error('Failed to fetch trending topics. Please try again later.');
@@ -164,9 +246,7 @@ export class GeminiService {
   }
 
   async generatePostContent(topic: TrendingTopic): Promise<string> {
-    if (!this.model) {
-      throw new Error('Gemini API not configured. Please add VITE_GEMINI_API_KEY to your environment.');
-    }
+    this.requireClient();
 
     const prompt = `Create a professional LinkedIn post about "${topic.topic}". 
     
@@ -186,9 +266,7 @@ export class GeminiService {
     Make it authentic and engaging, suitable for a professional audience.`;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return await this.generateText(prompt);
     } catch (error) {
       console.error('Error generating post content:', error);
       throw new Error('Failed to generate post content. Please try again later.');
@@ -196,9 +274,7 @@ export class GeminiService {
   }
 
   async refineContent(content: string, refinementType: RefinementType): Promise<string> {
-    if (!this.model) {
-      throw new Error('Gemini API not configured. Please add VITE_GEMINI_API_KEY to your environment.');
-    }
+    this.requireClient();
 
     const refinementInstructions = {
       improve_clarity: 'Make the content clearer, more concise, and easier to understand. Remove jargon and complex sentences.',
@@ -228,9 +304,7 @@ export class GeminiService {
     Return only the refined content:`;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
+      return (await this.generateText(prompt)).trim();
     } catch (error) {
       console.error('Error refining content:', error);
       throw new Error('Failed to refine content. Please try again later.');
@@ -261,9 +335,7 @@ export class GeminiService {
   }
 
   async generateImageFromContent(content: string): Promise<GeneratedImage> {
-    if (!this.model) {
-      throw new Error('Gemini API not configured. Please add VITE_GEMINI_API_KEY to your environment.');
-    }
+    this.requireClient();
 
     // Generate an image description based on the post content
     const prompt = `Based on this LinkedIn post content, create a detailed description for a professional image that would complement the post:
@@ -281,10 +353,8 @@ export class GeminiService {
     Return only a concise image description (max 100 words):`;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const imageDescription = response.text().trim();
-      
+      const imageDescription = (await this.generateText(prompt)).trim();
+
       return this.generateImage(imageDescription, 'professional');
     } catch (error) {
       console.error('Error generating image from content:', error);
@@ -293,4 +363,13 @@ export class GeminiService {
   }
 }
 
-export const geminiService = new GeminiService();
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn('Gemini API key not found. Trending topics feature will be disabled.');
+}
+
+export const geminiService = new GeminiService({
+  apiKey,
+  model: import.meta.env.VITE_GEMINI_MODEL,
+});
