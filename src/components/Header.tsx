@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Calendar, FileText, Home, Linkedin, LogOut, UserCircle, ChevronDown } from "lucide-react"
+import { Calendar, FileText, Home, NotebookPen, LogOut, UserCircle, ChevronDown } from "lucide-react"
 import type { ViewMode } from "../types"
 import { useApp } from "../context/use-app"
 import { useAuth } from "../hooks/useAuth"
@@ -30,8 +30,8 @@ export function Header() {
           {/* Logo and Title */}
           <div className="flex items-center">
             <div className="flex items-center space-x-2">
-              <Linkedin className="w-8 h-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">Social Manager</h1>
+              <NotebookPen className="w-8 h-8 text-blue-600" aria-hidden="true" />
+              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">Content Planner</h1>
             </div>
           </div>
 

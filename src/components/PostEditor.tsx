@@ -415,7 +415,7 @@ export function PostEditor({ post, selectedTopic, selectedDateForScheduling, onC
               <div className="sticky top-0 bg-gradient-to-b from-gray-50 to-gray-100 pb-4 mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Eye className="w-5 h-5 text-blue-600" />
-                  LinkedIn Preview
+                  LinkedIn-style Preview
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">See how your post will look on LinkedIn</p>
               </div>
