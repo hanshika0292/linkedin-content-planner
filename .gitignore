@@ -26,3 +26,6 @@ dist-ssr
 # Environment files (keep the example)
 .env*
 !.env.example
+
+# TypeScript build info
+*.tsbuildinfo

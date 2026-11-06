@@ -2,6 +2,13 @@
   "name": "linkedin-content-planner",
   "private": true,
   "version": "0.0.0",
+  "description": "Plan, draft and track LinkedIn posts with a content calendar, a post preview and Google Gemini rewrites. React, TypeScript and Supabase.",
+  "license": "MIT",
+  "author": "Hanshika Gupta",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hanshika0292/linkedin-content-planner.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
